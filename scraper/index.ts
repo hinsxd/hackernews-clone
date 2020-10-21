@@ -15,6 +15,10 @@ async function getNewsItems(): Promise<NewsItem[]> {
   // HN support only 4 parallel requests, and number of posts are not infinite.
   // Only about 14 pages currently.
 
+  // Limitation: HN scores and comments are increasing rapidly.
+  // A post can easily move from one page to another,
+  // causing duplicated/missing results.
+
   // Using traditional way to see if having next page.
   // If still has next page, load and parse next page.
   let page = 1;
