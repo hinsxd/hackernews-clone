@@ -6,3 +6,18 @@ export type NewsItem = {
   comments: number;
   link: string | null;
 };
+
+export type ItemsArgs = {
+  orderBy: 'points' | 'comments';
+  order: 'desc' | 'asc';
+  limit: number;
+  offset: number;
+};
+
+// Variables are partial because GraphQL server has default variables.
+export type ItemsQueryVariables = Partial<ItemsArgs>;
+
+export type ItemsPayload = {
+  count: number;
+  newsItems: NewsItem[];
+};

@@ -1,4 +1,4 @@
-import { NewsItem } from 'common/types';
+import { ItemsArgs, ItemsPayload, NewsItem } from 'common/types';
 import cors from 'cors';
 import express from 'express';
 import { graphqlHTTP } from 'express-graphql';
@@ -40,16 +40,7 @@ const schema = buildSchema(/* GraphQL */ `
 `);
 
 // Resolver
-type ItemsArgs = {
-  orderBy: 'points' | 'comments';
-  order: 'desc' | 'asc';
-  limit: number;
-  offset: number;
-};
-type ItemsPayload = {
-  count: number;
-  newsItems: NewsItem[];
-};
+
 const root = {
   items: (args: ItemsArgs): ItemsPayload => {
     const { limit, offset, order, orderBy } = args;
