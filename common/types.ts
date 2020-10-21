@@ -5,6 +5,7 @@ export type NewsItem = {
   author: string | null;
   comments: number;
   link: string | null;
+  time: string;
 };
 
 export type ItemsArgs = {
