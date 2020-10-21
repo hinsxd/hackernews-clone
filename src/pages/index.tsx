@@ -1,7 +1,9 @@
 import { gql, useQuery } from '@apollo/client';
-import { Card, CardContent, Container } from '@material-ui/core';
-import { ItemsArgs, ItemsPayload, ItemsQueryVariables } from 'common/types';
+import { Card, CardContent } from '@material-ui/core';
+import { ItemsPayload, ItemsQueryVariables } from 'common/types';
 import { NextPage } from 'next';
+import { useRef } from 'react';
+import { Waypoint } from 'react-waypoint';
 import styled from 'styled-components';
 
 const NEWSITEMS_QUERY = gql`
@@ -34,17 +36,41 @@ const Wrapper = styled.div`
 `;
 const ItemCard = styled(Card)`
   margin: 20px;
-  flex: 0 0 300px;
+  flex: 0 0 400px;
   @media screen and (max-width: 960px) {
     flex: 0 0 auto;
   }
 `;
 
 const Index: NextPage = () => {
-  const { data, error } = useQuery<
+  const offset = useRef(0);
+  const { data, error, fetchMore } = useQuery<
     { items: ItemsPayload },
     ItemsQueryVariables
-  >(NEWSITEMS_QUERY, { variables: {} });
+  >(NEWSITEMS_QUERY, { variables: { limit: 40, offset: 0 }, ssr: true });
+
+  const loadMore = async () => {
+    offset.current += 40;
+
+    await fetchMore({
+      variables: { offset: offset.current },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        // console.log(fetchMoreResult);
+        console.log(prev);
+        if (!fetchMoreResult) return prev;
+        return {
+          items: {
+            ...prev.items,
+            count: fetchMoreResult.items.count,
+            newsItems: [
+              ...prev.items.newsItems,
+              ...fetchMoreResult.items.newsItems,
+            ],
+          },
+        };
+      },
+    });
+  };
 
   return (
     <Wrapper>
@@ -53,6 +79,9 @@ const Index: NextPage = () => {
           <CardContent>{item.title}</CardContent>
         </ItemCard>
       ))}
+      {data?.items.newsItems.length < data?.items.count && (
+        <Waypoint onEnter={loadMore} />
+      )}
     </Wrapper>
   );
 };
