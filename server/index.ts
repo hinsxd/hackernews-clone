@@ -51,7 +51,7 @@ const root = {
       .sort((a, b) => modifier * (a[orderBy] - b[orderBy]))
       .slice(offset, offset + limit);
     return {
-      count: result.length,
+      count: newsItems.length,
       newsItems: result,
     };
   },
