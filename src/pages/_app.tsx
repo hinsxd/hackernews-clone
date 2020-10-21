@@ -1,4 +1,5 @@
 import { ApolloProvider } from '@apollo/client';
+import dynamic from 'next/dynamic';
 import { CssBaseline, ThemeProvider } from '@material-ui/core';
 import { AppProps } from 'next/app';
 import { useEffect } from 'react';
@@ -24,4 +25,6 @@ function MyApp({ Component, pageProps }: AppProps) {
   );
 }
 
-export default MyApp;
+// Just to prevent "Did not expect server HTML to contain" in development due to SSR.
+// Deployment will be Static page anyways, therefore no error will occur.
+export default dynamic(() => Promise.resolve(MyApp), { ssr: false });
