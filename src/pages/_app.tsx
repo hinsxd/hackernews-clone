@@ -1,6 +1,8 @@
+import { ApolloProvider } from '@apollo/client';
 import { CssBaseline, ThemeProvider } from '@material-ui/core';
 import { AppProps } from 'next/app';
 import { useEffect } from 'react';
+import { useApollo } from 'src/apollo';
 import { theme } from 'src/theme';
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -11,11 +13,14 @@ function MyApp({ Component, pageProps }: AppProps) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
   }, []);
+  const apolloClient = useApollo();
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Component {...pageProps} />
-    </ThemeProvider>
+    <ApolloProvider client={apolloClient}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Component {...pageProps} />
+      </ThemeProvider>
+    </ApolloProvider>
   );
 }
 
