@@ -118,7 +118,7 @@ $ yarn build && yarn start
 $ npm run build && npm run start
 ```
 
-## Part 1.1: HN Scraping (`scraper/index.ts`)
+## Part 1.1. HN Scraping (`scraper/index.ts`)
 
 ### Tools used:
 
@@ -203,7 +203,7 @@ $ npm run build && npm run start
     const time = parse(timeStr)[0]?.date().toISOString() || null;
     ```
 
-## Part 1.2: Serving data on GraphQL with Express (`server/index.ts`)
+## Part 1.2. Serving data on GraphQL with Express (`server/index.ts`)
 
 ### Schema
 
@@ -287,4 +287,168 @@ As a result, `cors` is used to allow all origins.
 app.use(cors({ origin: '*' }));
 ```
 
-## 3.
+## Part 2. Next.js Frontend With Apollo Client, Material UI
+
+### GraphQL Query
+
+```graphql
+query Items($limit: Int, $offset: Int, $orderBy: OrderBy, $order: Order) {
+  items(limit: $limit, offset: $offset, orderBy: $orderBy, order: $order) {
+    count
+    newsItems {
+      id
+      title
+      points
+      author
+      comments
+      link
+      time
+      relativeTime
+    }
+  }
+}
+```
+
+### Query variables
+
+```typescript
+// Variables in server will not be optional due to default variables in GQL Schema
+export type ItemsArgs = {
+  orderBy: 'points' | 'comments';
+  order: 'desc' | 'asc';
+  limit: number;
+  offset: number;
+};
+
+// Variables are partial in frontend.
+export type ItemsQueryVariables = Partial<ItemsArgs>;
+```
+
+### Sorting and ordering
+
+Two state variables are used:
+
+```typescript
+// src/pages/index.tsx:63
+type OrderBy = 'comments' | 'points';
+const [orderBy, setOrderBy] = useState<OrderBy>('comments');
+
+type Order = 'desc' | 'desc';
+const [order, setOrder] = useState<Order>('desc');
+```
+
+When these two variables change, an effect will be triggered to `refetch` data.
+This will also scroll back to top for convenience.
+
+```typescript
+// src/pages/index.tsx:105
+// When searching param changes, refetch items.
+useEffect(() => {
+  window.scrollTo({ top: 0 });
+  refetch({ order, orderBy });
+}, [orderBy, order, refetch]);
+```
+
+### Infinite loading
+
+The `count` property in the data response shows the total number of items available. When the current fetched item is less then `count`, a `Waypoint` from `react-waypoint` will be rendered at the end of the page.
+
+```tsx
+// src/pages/index.tsx:201
+{
+  data?.items.newsItems.length < data?.items.count && (
+    <Waypoint onEnter={loadMore} />
+  );
+}
+```
+
+This will fire the following function when this invisible element is scrolled into the viewport.
+
+```typescript
+// src/pages/index.tsx:78
+// Infinite loading
+// Auto fetch when scrolling to bottom.
+const loadMore = async () => {
+  await fetchMore({
+    variables: {
+      // Offset is the current items size
+      offset: data?.items?.newsItems.length || 0,
+      // A predefined value, which is 10 in the requirement
+      limit: FETCHMORE_PAGESIZE,
+    },
+    updateQuery: (prev, { fetchMoreResult }) => {
+      // As result is not simple array (see src/types),
+      // we need to merge the newsItems array
+      if (!fetchMoreResult || fetchMoreResult.items.newsItems.length === 0) {
+        return prev;
+      }
+
+      return {
+        items: {
+          ...prev.items,
+          count: fetchMoreResult.items.count,
+          // appending new items to old items
+          newsItems: [
+            ...prev.items.newsItems,
+            ...fetchMoreResult.items.newsItems,
+          ],
+        },
+      };
+    },
+  });
+};
+```
+
+### Styling
+
+`styled-components` is used as recommended. Custom styles are mainly used to build `Topbar` and `Toolbar`, which serve as mimicking HN and sorting controls respectively.
+
+```typescript
+// src/pages/index.tsx:229
+const Topbar = styled.div`
+  height: 50px;
+  width: 100%;
+  background-color: #ff6600;
+  padding-left: 24px;
+  padding-right: 24px;
+  display: flex;
+  align-items: center;
+  & > * {
+    margin-right: 10px;
+  }
+`;
+
+const Toolbar = styled.div`
+  height: 50px;
+  width: 100%;
+  padding-left: 24px;
+  padding-right: 24px;
+  margin-bottom: 24px;
+  background-color: #666666;
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0px;
+  & > * {
+    margin-right: 10px;
+  }
+`;
+// ...and more
+```
+
+### Responsiveness
+
+Responsive display of new items is achieved by `<Grid>` from Material UI.
+
+Each `<Card>` is wrapped in a `<Grid item>` responsive widths. The minimal requirement of choosing widths is to ensure the row showing item meta (points, comments, author) has enough widths.
+
+```tsx
+// src/pages/index.ts:145
+<Grid container spacing={2}>
+  {data?.items.newsItems.map((item) => (
+    <Grid key={item.id} item xl={3} lg={4} md={6} xs={12}>
+      <Card></Card>
+    </Grid>
+  ))}
+</Grid>
+```

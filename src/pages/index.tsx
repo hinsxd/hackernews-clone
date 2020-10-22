@@ -1,15 +1,12 @@
 // @refresh reset
 import { gql, useQuery } from '@apollo/client';
 import {
-  Avatar,
   Card,
   CardActionArea,
   CardContent,
-  CardHeader,
   Container,
   Grid,
   TextField,
-  Typography,
 } from '@material-ui/core';
 import {
   Comment as CommentIcon,
@@ -110,10 +107,10 @@ const Index: NextPage = () => {
   return (
     <div>
       {/* An orange bar mimicking HN */}
-      <Titlebar>
+      <Topbar>
         <Logo />
         <PageTitle>Hacker News</PageTitle>
-      </Titlebar>
+      </Topbar>
 
       {/* A stick toolbar to set sorting params easily */}
       <Toolbar>
@@ -229,7 +226,7 @@ const PageTitle = styled.span`
   color: white;
 `;
 
-const Titlebar = styled.div`
+const Topbar = styled.div`
   height: 50px;
   width: 100%;
   background-color: #ff6600;
@@ -243,7 +240,6 @@ const Titlebar = styled.div`
 `;
 
 const Toolbar = styled.div`
-  /* If z-index is not set, Avatar will be on top of toolbar */
   z-index: 10;
   height: 50px;
   width: 100%;
