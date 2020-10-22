@@ -3,9 +3,13 @@ import { gql, useQuery } from '@apollo/client';
 import {
   Avatar,
   Card,
+  CardActionArea,
   CardContent,
   CardHeader,
+  Container,
+  Grid,
   TextField,
+  Typography,
 } from '@material-ui/core';
 import {
   Comment as CommentIcon,
@@ -141,29 +145,55 @@ const Index: NextPage = () => {
       </Toolbar>
 
       {/* Fetched Items */}
-      <ItemsWrapper>
-        {data?.items.newsItems.map((item) => (
-          <ItemCard key={item.id}>
-            <CardHeader
-              avatar={
-                <Avatar>{item.author?.[0].toLocaleUpperCase() || ''}</Avatar>
-              }
-              title={item.author}
-              subheader={
-                <SubheaderRow>
-                  {item.relativeTime}
-                  <Bullet>•</Bullet>
-                  <ThumbUpIcon fontSize="inherit" />
-                  {item.points}
-                  <Bullet>•</Bullet>
-                  <CommentIcon fontSize="inherit" />
-                  {item.comments}
-                </SubheaderRow>
-              }
-            />
-            <CardContent>{item.title}</CardContent>
-          </ItemCard>
-        ))}
+      <Container maxWidth={false}>
+        <Grid container spacing={2}>
+          {data?.items.newsItems.map((item) => (
+            <Grid
+              key={item.id}
+              item
+              xl={3}
+              lg={4}
+              md={6}
+              xs={12}
+              alignItems="stretch"
+            >
+              <Card>
+                <CardActionArea
+                  href={item.link}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  <CardContent>
+                    <TitleText>{item.title}</TitleText>
+                    <LinkText
+                      href={item.link}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      {item.link}
+                    </LinkText>
+                    <MetaRow>
+                      {item.author && (
+                        <>
+                          {item.author}
+                          <Bullet>•</Bullet>
+                        </>
+                      )}
+
+                      {item.relativeTime}
+                      <Bullet>•</Bullet>
+                      <ThumbUpIcon fontSize="inherit" />
+                      {item.points}
+                      <Bullet>•</Bullet>
+                      <CommentIcon fontSize="inherit" />
+                      {item.comments}
+                    </MetaRow>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
 
         {/* 
           If loaded items is less than total count,
@@ -173,7 +203,7 @@ const Index: NextPage = () => {
         {data?.items.newsItems.length < data?.items.count && (
           <Waypoint onEnter={loadMore} />
         )}
-      </ItemsWrapper>
+      </Container>
     </div>
   );
 };
@@ -221,6 +251,7 @@ const Toolbar = styled.div`
   width: 100%;
   padding-left: 24px;
   padding-right: 24px;
+  margin-bottom: 24px;
   background-color: #666666;
   display: flex;
   align-items: center;
@@ -249,30 +280,37 @@ const StyledTextField = styled(TextField)`
   }
 `;
 
-const ItemsWrapper = styled.div`
-  width: 100%;
-  padding-left: 24px;
-  padding-right: 24px;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  @media screen and (max-width: 960px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
+const TitleText = styled.span`
+  font-size: 16px;
+  font-weight: 600;
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  max-width: 100%;
+  -webkit-box-orient: vertical;
 `;
 
-const ItemCard = styled(Card)`
-  margin: 10px;
-  flex: 0 0 400px;
-  @media screen and (max-width: 960px) {
-    /* margin-bottom: 20px;
-    margin-right: 0px; */
-    flex: 0 0 auto;
+const LinkText = styled.a`
+  text-decoration: none;
+  color: rgb(255, 102, 0);
+  &:hover {
+    color: rgb(255, 0, 0);
   }
+  &:visited {
+    color: rgba(255, 0, 98, 0.486);
+  }
+  display: block;
+  margin-top: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
-const SubheaderRow = styled.span`
+const MetaRow = styled.span`
+  margin-top: 5px;
+  display: block;
+  color: #666666;
   display: flex;
   align-items: center;
 `;
