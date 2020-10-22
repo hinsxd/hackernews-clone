@@ -1,5 +1,5 @@
 import { gql, useQuery } from '@apollo/client';
-import { Card, CardContent, TextField } from '@material-ui/core';
+import { Card, CardContent, CardHeader, TextField } from '@material-ui/core';
 import { ItemsPayload, ItemsQueryVariables } from 'common/types';
 import { NextPage } from 'next';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
@@ -17,6 +17,8 @@ const NEWSITEMS_QUERY = gql`
         author
         comments
         link
+        time
+        relativeTime
       }
     }
   }
@@ -131,6 +133,7 @@ const Index: NextPage = () => {
       <ItemsWrapper>
         {data?.items.newsItems.map((item) => (
           <ItemCard key={item.id}>
+            <CardHeader title={item.author} subheader={item.relativeTime} />
             <CardContent>{item.title}</CardContent>
           </ItemCard>
         ))}

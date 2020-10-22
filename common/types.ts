@@ -6,6 +6,7 @@ export type NewsItem = {
   comments: number;
   link: string | null;
   time: string;
+  relativeTime: string;
 };
 
 export type ItemsArgs = {

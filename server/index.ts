@@ -23,6 +23,7 @@ const schema = buildSchema(/* GraphQL */ `
     comments: Int!
     link: String
     time: String
+    relativeTime: String
   }
 
   type NewsItemsPayload {

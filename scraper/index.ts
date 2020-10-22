@@ -15,16 +15,18 @@ async function getNewsItems(): Promise<NewsItem[]> {
   // HN support only 4 parallel requests, and number of posts are not infinite.
   // Only about 14 pages currently.
 
-  // Limitation: HN scores and comments are increasing rapidly.
-  // A post can easily move from one page to another,
-  // causing duplicated/missing results.
-
   // Using traditional way to see if having next page.
   // If still has next page, load and parse next page.
   let page = 1;
   let hasNext = true;
+
+  // HN scores and comments are increasing rapidly.
+  // A post can easily move from one page to another,
+  // causing duplicated/missing results.
+  // Using a map to track existing ids.
+
+  const ids = new Set<number>();
   while (hasNext) {
-    console.log('processing page', page);
     const html = await loadPage(page);
     const $ = cheerio.load(html);
 
@@ -36,6 +38,10 @@ async function getNewsItems(): Promise<NewsItem[]> {
 
     titleRows.toArray().forEach((el) => {
       const id = +el.attribs.id;
+
+      // Skipping if already parsed this ID.
+      if (ids.has(id)) return;
+
       // Title and link
       const titleEl = $(`tr#${id}.athing > td.title`);
       const storylinkEl = titleEl.find('a.storylink');
@@ -61,7 +67,16 @@ async function getNewsItems(): Promise<NewsItem[]> {
       const timeStr = pointEl.siblings('.age').find('a').text();
       const time = parse(timeStr)[0]?.date().toISOString() || null;
 
-      newsItems.push({ id, points, author, title, link, comments, time });
+      newsItems.push({
+        id,
+        points,
+        author,
+        title,
+        link,
+        comments,
+        time,
+        relativeTime: timeStr,
+      });
     });
 
     // Look for 'More' button
