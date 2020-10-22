@@ -443,7 +443,7 @@ Responsive display of new items is achieved by `<Grid>` from Material UI.
 Each `<Card>` is wrapped in a `<Grid item>` responsive widths. The minimal requirement of choosing widths is to ensure the row showing item meta (points, comments, author) has enough widths.
 
 ```tsx
-// src/pages/index.ts:145
+// src/pages/index.tsx:145
 <Grid container spacing={2}>
   {data?.items.newsItems.map((item) => (
     <Grid key={item.id} item xl={3} lg={4} md={6} xs={12}>
