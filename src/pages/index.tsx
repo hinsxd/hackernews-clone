@@ -123,7 +123,6 @@ const Index: NextPage = () => {
           variant="outlined"
           size="small"
           SelectProps={{ native: true }}
-          style={{ color: 'white' }}
           value={orderBy}
           onChange={handleOrderByChange}
         >
@@ -148,20 +147,14 @@ const Index: NextPage = () => {
       <Container maxWidth={false}>
         <Grid container spacing={2}>
           {data?.items.newsItems.map((item) => (
-            <Grid
-              key={item.id}
-              item
-              xl={3}
-              lg={4}
-              md={6}
-              xs={12}
-              alignItems="stretch"
-            >
+            <Grid key={item.id} item xl={3} lg={4} md={6} xs={12}>
               <Card>
                 <CardActionArea
-                  href={item.link}
-                  target="_blank"
-                  rel="noreferrer noopener"
+                  onClick={() =>
+                    // Does not use href because it turns the button into <a>,
+                    // where we have another <a> element inside the card.
+                    window.open(item.link, '_blank', 'noreferrer noopener')
+                  }
                 >
                   <CardContent>
                     <TitleText>{item.title}</TitleText>
@@ -180,8 +173,13 @@ const Index: NextPage = () => {
                         </>
                       )}
 
-                      {item.relativeTime}
-                      <Bullet>•</Bullet>
+                      {item.relativeTime && (
+                        <>
+                          {item.relativeTime}
+                          <Bullet>•</Bullet>
+                        </>
+                      )}
+
                       <ThumbUpIcon fontSize="inherit" />
                       {item.points}
                       <Bullet>•</Bullet>
