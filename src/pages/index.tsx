@@ -1,8 +1,19 @@
+// @refresh reset
 import { gql, useQuery } from '@apollo/client';
-import { Card, CardContent, CardHeader, TextField } from '@material-ui/core';
+import {
+  Avatar,
+  Card,
+  CardContent,
+  CardHeader,
+  TextField,
+} from '@material-ui/core';
+import {
+  Comment as CommentIcon,
+  ThumbUp as ThumbUpIcon,
+} from '@material-ui/icons';
 import { ItemsPayload, ItemsQueryVariables } from 'common/types';
 import { NextPage } from 'next';
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { Waypoint } from 'react-waypoint';
 import styled from 'styled-components';
 
@@ -26,6 +37,9 @@ const NEWSITEMS_QUERY = gql`
 
 // All 'styled' components can be found on bottom of file, to avoid distractions.
 
+const INITIAL_PAGESIZE = 50;
+const FETCHMORE_PAGESIZE = 10;
+
 const Index: NextPage = () => {
   // Apollo query hook
   const { data, fetchMore, refetch } = useQuery<
@@ -33,7 +47,7 @@ const Index: NextPage = () => {
     ItemsQueryVariables
   >(NEWSITEMS_QUERY, {
     variables: {
-      limit: 40,
+      limit: INITIAL_PAGESIZE,
       offset: 0,
       orderBy: 'comments', // defaults should match initial states
       order: 'desc', // defaults should match initial states
@@ -55,22 +69,21 @@ const Index: NextPage = () => {
     setOrder(e.target.value as Order);
   };
 
-  // For infinite loading, current page info.
-  // Use useRef because this should not trigger extra render.
-  const offset = useRef(0);
-
+  // Infinite loading
   // Auto fetch when scrolling to bottom.
   const loadMore = async () => {
-    offset.current += 40;
-
     await fetchMore({
-      variables: { offset: offset.current },
+      variables: {
+        offset: data?.items?.newsItems.length || 0,
+        limit: FETCHMORE_PAGESIZE,
+      },
       updateQuery: (prev, { fetchMoreResult }) => {
         // As result is not simple array (see src/types),
         // we need to merge the newsItems array
         if (!fetchMoreResult || fetchMoreResult.items.newsItems.length === 0) {
           return prev;
         }
+
         return {
           items: {
             ...prev.items,
@@ -85,13 +98,11 @@ const Index: NextPage = () => {
     });
   };
 
-  // When searching param changes, refetch and reset offset to 0.
+  // When searching param changes, refetch items.
   useEffect(() => {
     window.scrollTo({ top: 0 });
-    offset.current = 0;
     refetch({ order, orderBy });
   }, [orderBy, order, refetch]);
-
   return (
     <div>
       {/* An orange bar mimicking HN */}
@@ -133,7 +144,23 @@ const Index: NextPage = () => {
       <ItemsWrapper>
         {data?.items.newsItems.map((item) => (
           <ItemCard key={item.id}>
-            <CardHeader title={item.author} subheader={item.relativeTime} />
+            <CardHeader
+              avatar={
+                <Avatar>{item.author?.[0].toLocaleUpperCase() || ''}</Avatar>
+              }
+              title={item.author}
+              subheader={
+                <SubheaderRow>
+                  {item.relativeTime}
+                  <Bullet>•</Bullet>
+                  <ThumbUpIcon fontSize="inherit" />
+                  {item.points}
+                  <Bullet>•</Bullet>
+                  <CommentIcon fontSize="inherit" />
+                  {item.comments}
+                </SubheaderRow>
+              }
+            />
             <CardContent>{item.title}</CardContent>
           </ItemCard>
         ))}
@@ -188,6 +215,8 @@ const Titlebar = styled.div`
 `;
 
 const Toolbar = styled.div`
+  /* If z-index is not set, Avatar will be on top of toolbar */
+  z-index: 10;
   height: 50px;
   width: 100%;
   padding-left: 24px;
@@ -234,9 +263,21 @@ const ItemsWrapper = styled.div`
 `;
 
 const ItemCard = styled(Card)`
-  margin: 20px;
+  margin: 10px;
   flex: 0 0 400px;
   @media screen and (max-width: 960px) {
+    /* margin-bottom: 20px;
+    margin-right: 0px; */
     flex: 0 0 auto;
   }
+`;
+
+const SubheaderRow = styled.span`
+  display: flex;
+  align-items: center;
+`;
+
+const Bullet = styled.span`
+  display: inline-block;
+  margin: 0 4px;
 `;
