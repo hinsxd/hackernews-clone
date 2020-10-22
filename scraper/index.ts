@@ -41,7 +41,7 @@ async function getNewsItems(): Promise<NewsItem[]> {
 
       // Skipping if already parsed this ID.
       if (ids.has(id)) return;
-
+      ids.add(id);
       // Title and link
       const titleEl = $(`tr#${id}.athing > td.title`);
       const storylinkEl = titleEl.find('a.storylink');
