@@ -254,6 +254,9 @@ const Toolbar = styled.div`
   & > * {
     margin-right: 10px;
   }
+  & > :last-child {
+    margin-right: 0;
+  }
 `;
 
 const OptionLabel = styled.span`
