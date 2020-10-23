@@ -452,3 +452,17 @@ Each `<Card>` is wrapped in a `<Grid item>` responsive widths. The minimal requi
   ))}
 </Grid>
 ```
+
+## Difficulties, Limitations and Possible Improvements
+
+### Scraping data
+
+- HN does not provide an API, and the position of items changes rapidly over time, leading to duplicate or missing items. The problem of uplicate items is handled in the code. But to avoid missing items, we need to fetch data as fast as possible with parallel request, but:
+- HN limits to 4 parallel requests. Currently, pages are fetched one by one for convenience.
+- Improvements:
+  - Fetch 4 pages in parallel each time, and merging the fetched items arrays. Determine whether to fetch the next batch by checking if any results as less than 30 items, because each HN pages has 30 items at most.
+- HN does not provide anything any data of real posted time of an item. We can only guess by parsing relative time strings like `6 hours ago` using `chrono-node`. This prevents accurate sorting by posted time of items.
+
+### Frontend
+
+- Currently only supports sorting by comments count and points. If the real posted time can be extracted from the webpage, sorting by time / time-range can also be possible.
