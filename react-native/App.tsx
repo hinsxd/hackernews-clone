@@ -135,6 +135,7 @@ export default function App() {
           mode="dialog"
           iosHeader="Sort By"
           selectedValue={orderBy}
+          style={{ marginRight: 0 }}
           textStyle={{ color: '#ffe0cc', fontWeight: '600', paddingRight: 0 }}
           iosIcon={
             <Icon
@@ -231,8 +232,8 @@ const styles = StyleSheet.create({
 
   toolbar: {
     height: 50,
-    paddingLeft: 24,
-    paddingRight: 24,
+    paddingLeft: 16,
+    paddingRight: 16,
     backgroundColor: '#666666',
     display: 'flex',
     flexDirection: 'row',
