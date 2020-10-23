@@ -35,6 +35,7 @@ const getItems = (args: ItemsArgs): Promise<ItemsPayload> => {
     const result = [...data]
       .sort((a, b) => modifier * (a[orderBy] - b[orderBy]))
       .slice(offset, offset + limit);
+    // Simulating a fetch delay.
     setTimeout(() => {
       resolve({
         count: data.length,
@@ -219,7 +220,6 @@ export default function App() {
           </TouchableHighlight>
         )}
       />
-      <ExpoStatusBar />
     </Container>
   );
 }
