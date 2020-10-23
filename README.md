@@ -16,6 +16,21 @@ Yet another HackerNews clone built _with Next.js, Express + GraphQL server_
 ├── data.json               # Generated data from scraping
 ├── next-env.d.ts
 ├── package.json
+├── react-native            # React native implementation
+│   ├── .eslintrc.js
+│   ├── .gitignore
+│   ├── .prettierrc
+│   ├── App.tsx
+│   ├── app.json
+│   ├── assets
+│   │   ├── favicon.png
+│   │   ├── icon.png
+│   │   └── splash.png
+│   ├── babel.config.js
+│   ├── data.json           # data file copied for convenience
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── yarn.lock
 ├── scraper
 │   └── index.ts            # Part I: Scrape HN with Cheerio.
 ├── server
@@ -71,8 +86,8 @@ The script will generate `data.json` at root level, in the format of
     "comments": 327,
     "time": "2020-10-21T16:50:30.000Z",
     "relativeTime": "10 hours ago"
-  },
-  ...
+  }
+  // ...
 ]
 ```
 
@@ -90,7 +105,7 @@ $ npm run start:server
 
 This runs `server/index.ts` with `ts-node-dev` in watching mode, which will respawn at file change.
 
-As this does not mean to be deployed a server, no production tools have been set up.
+As this does not mean to be deployed a server, no production tool has been set up.
 
 At production, `pm2` / `nodemon` will be used to allow clustering, crash-respawn, etc.
 
@@ -116,6 +131,14 @@ $ yarn build && yarn start
 # or
 
 $ npm run build && npm run start
+```
+
+### React Native Implementation
+
+This react native project uses `expo` for development. `expo-cli` should be installed globally first.
+
+```bash
+$ npm i -g expo-cli
 ```
 
 ## Part 1.1. HN Scraping (`scraper/index.ts`)
@@ -452,6 +475,103 @@ Each `<Card>` is wrapped in a `<Grid item>` responsive widths. The minimal requi
   ))}
 </Grid>
 ```
+
+## Extra: React Native implementation
+
+This project uses `expo` for development, with `nativebase` as the layout UI component.
+
+As react native cannot import files from the repo root folder for some unknown reasons, `data.json` has been copied to the project folder `/react-native`.
+
+For simplicity, the fetching layer is implemented by reading the data directly, while mimicking the fetching API.
+
+```ts
+// react-native/App.tsx:29
+const getItems = (args: ItemsArgs): Promise<ItemsPayload> => {
+  return new Promise((resolve) => {
+    const { limit, offset, order, orderBy } = args;
+    // If desc order, sort comparator is inverted.
+    const modifier = order === 'desc' ? -1 : 1;
+    const result = [...data]
+      .sort((a, b) => modifier * (a[orderBy] - b[orderBy]))
+      .slice(offset, offset + limit);
+    // Simulating a fetch delay.
+    setTimeout(() => {
+      resolve({
+        count: data.length,
+        newsItems: result,
+      });
+    }, 700);
+  });
+};
+
+// react-native/App.tsx:107
+const loadMore = () => {
+  if (hasMore) {
+    getItems({
+      offset: items.length,
+      limit: FETCHMORE_PAGESIZE,
+      order,
+      orderBy,
+    }).then((fetchMoreResult) => {
+      setItems([...items, ...fetchMoreResult.newsItems]);
+    });
+  }
+};
+```
+
+Sorting options can be chosen with the `Picker` component from `nativebase`.
+
+```tsx
+// react-native/App.tsx:134
+<Picker
+  mode="dialog"
+  iosHeader="Sort By"
+  selectedValue={orderBy}
+  textStyle={{ color: '#ffe0cc', fontWeight: '600', paddingRight: 0 }}
+  iosIcon={
+    <Icon
+      name="arrow-dropdown-circle"
+      style={{ color: '#ff6600', fontSize: 20 }}
+    />
+  }
+  onValueChange={handleOrderByChange}
+>
+  <Picker.Item label="Comments" value="comments" />
+  <Picker.Item label="Points" value="points" />
+</Picker>
+```
+
+The item list has rendered with `FlatList` from `react-native`, with a loading indicator on top, and an extra row to indicate the ability to load more automatically.
+
+Infinite scrolling is done by scrolling to bottom, and triggering `loadMore`.
+
+```tsx
+<FlatList
+  ref={contentRef}
+  data={items}
+  keyExtractor={(item) => `${item.id}`}
+  onEndReached={loadMore} // Infinite scrolling
+  ListHeaderComponent={
+    loading && (
+      <View style={styles.loadingIndicator}>
+        <Text>Loading</Text>
+      </View>
+    )
+  }
+  ListFooterComponent={
+    hasMore && (
+      <View style={styles.fetchMoreBar}>
+        <Text style={styles.fetchMoreText}>Loading more</Text>
+      </View>
+    )
+  }
+  renderItem={({ item, index, separators }) => (...)}
+/>
+```
+
+### Example
+
+![React Native example](rn.gif)
 
 ## Difficulties, Limitations and Possible Improvements
 
