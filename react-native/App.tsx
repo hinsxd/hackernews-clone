@@ -23,7 +23,7 @@ import type { ItemsArgs, ItemsPayload, NewsItem } from '../common/types';
 import data from './data.json';
 
 const INITIAL_PAGESIZE = 20;
-const FETCHMORE_PAGESIZE = 100;
+const FETCHMORE_PAGESIZE = 10;
 // A function mocking fetching data from server
 // Copying from resolver for simplicity
 const getItems = (args: ItemsArgs): Promise<ItemsPayload> => {
@@ -179,7 +179,7 @@ export default function App() {
         ListFooterComponent={
           hasMore && (
             <View style={styles.fetchMoreBar}>
-              <Text style={styles.fetchMoreText}>Fetch more</Text>
+              <Text style={styles.fetchMoreText}>Loading more</Text>
             </View>
           )
         }
