@@ -356,7 +356,7 @@ Two state variables are used:
 type OrderBy = 'comments' | 'points';
 const [orderBy, setOrderBy] = useState<OrderBy>('comments');
 
-type Order = 'desc' | 'desc';
+type Order = 'desc' | 'asc';
 const [order, setOrder] = useState<Order>('desc');
 ```
 
